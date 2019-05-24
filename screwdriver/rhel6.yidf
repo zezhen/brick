@@ -1,0 +1,22 @@
+add yinst package buildyblocks
+add yinst package yjava_jdk
+add yinst package yjava_maven 3.0.4_29
+add yinst package gitzip
+add yinst package git_auto_version
+add yinst package perl-Test-Class
+add yinst package coverity TEST
+add yinst package coverity_license_none
+add yinst pkg ygrid_launcher
+add yinst pkg curveball_ffl_tools TEST
+add yinst pkg admin/user-bud_prd
+add yinst pkg mysql_client57
+
+add yinst package pogo_sd_client 0.1.31 *
+add yinst pkg curveball_screwdriver_tools
+add yinst package arya
+add yinst package arya_build_container
+
+add yinst setting zorg_client.server_address=https://zorg.corp.yahoo.com:4443
+add yinst setting zorg_client.bouncer_username=screwdriver.build.username
+add yinst setting zorg_client.bouncer_password=screwdriver.build.password
+

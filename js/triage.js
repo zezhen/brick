@@ -13,10 +13,22 @@ function show(chart, result, ranking_keys, convert_title) {
 
     // batch insert div for better performance
     var div_array = [];
+    var separate = false;
     keys.forEach(function(key) {
         metrics.forEach(function(metric) {
-            var chartdiv = "{0}_{1}_{2}".format(chart.id, metric.series, key);
-            div_array.push(get_div(chartdiv, "col-md-6 chart-space-md"));
+            var chartdiv = "{0}_{1}_{2}".format(chart.id, metric.series, key.replace(new RegExp("\\W+","gm"), "_"));
+            // separate: draw dod and wow graphs separately
+            if ('separate' in metric && metric.separate == 'true') {
+                separate = true;
+            }
+            if (separate) {
+                var dodchartdiv = "{0}_dod".format(chartdiv);
+                div_array.push(get_div(dodchartdiv, "col-md-6 chart-space-md"));
+                var wowchartdiv = "{0}_wow".format(chartdiv);
+                div_array.push(get_div(wowchartdiv, "col-md-6 chart-space-md"));
+            } else {
+                div_array.push(get_div(chartdiv, "col-md-6 chart-space-md"));
+            }
         });
     });
     insert_content(chart.id, div_array.join(""));
@@ -36,15 +48,30 @@ function show(chart, result, ranking_keys, convert_title) {
                 return [item[0], item[i]];
             }) : null;
             
-            var chartdiv = "{0}_{1}_{2}".format(chart.id, metric.series, key);
+            var chartdiv = "{0}_{1}_{2}".format(chart.id, metric.series, key.replace(new RegExp("\\W+","gm"), "_"));
             var title = isEmpty(convert_title) ? 
                 "{0}({1})".format(key, metric.series) : convert_title(key)
-            draw({
-                'id': chart.id, 
-                'title': title,
-                'metrics':[metric]
-            }, chartdiv, today, ystd, lastwk);
-
+            var separate = ('separate' in metric && metric.separate == 'true') ? true : false;
+            if (separate) {
+                var dodchartdiv = "{0}_dod".format(chartdiv);
+                var wowchartdiv = "{0}_wow".format(chartdiv);
+                draw_graph({
+                    'id': chart.id, 
+                    'title': title,
+                    'metrics':[metric]
+                }, dodchartdiv, today, ystd, null);
+                draw_graph({
+                    'id': chart.id, 
+                    'title': title,
+                    'metrics':[metric]
+                }, wowchartdiv, today, null, lastwk);
+            } else {
+                draw_graph({
+                    'id': chart.id, 
+                    'title': title,
+                    'metrics':[metric]
+                }, chartdiv, today, ystd, lastwk);
+            }
             i++;
         });
 

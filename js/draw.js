@@ -10,15 +10,14 @@ function stack_tooltip_formatter(xaixs, points) {
         var sum = 0;
         for(var i = s; i < len; i += 2) {
             var metric = points[i];
-            
             if(typeof(metric) != 'undefined') {
                 htmls.push('<tr><td><span style="color:{0}">\u25CF</span> {1}</td><td style="text-align: right;"><b>{2}</b></td></tr>'
-                            .format(metric.series.color, metric.series.options.id, Highcharts.numberFormat(metric.y, 2)));
+                            .format(metric.series.color, metric.series.options.id, Highcharts.numberFormat(metric.y, 2, '.', ',')));
                 sum += metric.y;
             }
         }
         htmls.push('<tr><td>Total</td><td style="text-align: right; font-size: 18px;"><b>{0}</b></td></tr>'
-                .format(Highcharts.numberFormat(sum, 2)));
+                .format(Highcharts.numberFormat(sum, 2, '.', ',')));
     });
 
     htmls.push('</table>');
@@ -41,7 +40,7 @@ function dodwow_tooltip_formatter(xaixs, points) {
         var currentP = points[i];
         
         htmls.push('<tr><td><span style="color:{0}">\u25CF</span> {1}</td><td colspan="2" style="text-align: right; font-size: 18px;"><b>{2}</b></td></tr>'
-                        .format(currentP.series.color, currentP.series.options.id, Highcharts.numberFormat(currentP.y, 2)));
+                        .format(currentP.series.color, currentP.series.options.id, Highcharts.numberFormat(currentP.y, 2, '.', ',')));
         
         for(var j = i + step; j < points.length; j += step) {
             var previousP = points[j];
@@ -52,7 +51,7 @@ function dodwow_tooltip_formatter(xaixs, points) {
                     : (currentP.y < previousP.y
                             ? '#d9534f'
                             : '#333333');
-                htmls.push('<tr><td><span style="color:{0}">\u25CF</span> {1}</td><td style="text-align: right;"><b>{2}</b></td><td style="text-align: right; color: {3};">(<b>{4}</b>)</td></tr>'.format(previousP.series.color, previousP.series.options.id, Highcharts.numberFormat(previousP.y, 2), nrtDiffsColor, Highcharts.numberFormat(currentP.y - previousP.y, 2)));
+                htmls.push('<tr><td><span style="color:{0}">\u25CF</span> {1}</td><td style="text-align: right;"><b>{2}</b></td><td style="text-align: right; color: {3};">(<b>{4}, {5}</b>)</tr>'.format(previousP.series.color, previousP.series.options.id, Highcharts.numberFormat(previousP.y, 2, '.', ','), nrtDiffsColor, Highcharts.numberFormat(currentP.y - previousP.y, 2, '.', ','), Highcharts.numberFormat((currentP.y - previousP.y)*100/previousP.y, 2, '.', ',') + '%'));
             } catch(e) {
                 console.log(e);
             }
@@ -90,6 +89,9 @@ function fit_chart(_title, _series, _yAxis, _formatter, _stacking) {
             },
             //maxZoom: Commons.MILLIS_PER_HOUR,
         },
+        legend: {
+            enabled: true
+        },
         yAxis: _yAxis,
         tooltip: {
             shared: true,
@@ -99,15 +101,6 @@ function fit_chart(_title, _series, _yAxis, _formatter, _stacking) {
             formatter: function () {
                 return _formatter(this.x, this.points);
             }
-        },
-        legend: {
-            enabled: true,
-            floating: true,
-            x: 60,
-            y: 35,
-            align: 'left',
-            layout: 'vertical',
-            verticalAlign: 'top',
         },
         plotOptions: {
             area: {
@@ -167,8 +160,8 @@ function fit_yaxis(_yAxis, chart) {
 
 }
 
-function fit_series(_series, chart, data) {
-    var i = 1;
+function fit_series(_series, chart, data, time_boundary) {
+    var i = 1, max_time = 0;
 
     var granularity = chart.granularity == 'undefined' ? 300 : chart.granularity * 60;
     chart.metrics.forEach(function(metric) {
@@ -177,6 +170,11 @@ function fit_series(_series, chart, data) {
         var previousTime = null;
         data.forEach(function(item) {
             var time = item[0] * 1000;
+            if(time_boundary != null && time > time_boundary) {
+                return;
+            }
+            max_time = Math.max(time, max_time);
+
             if(previousTime == null) {
                 previousTime = time;
             }
@@ -184,11 +182,11 @@ function fit_series(_series, chart, data) {
                 previousTime += granularity * 1000;
                 values.push([previousTime, 0]);
             }
-            values.push([time, item[i]]);
+            values.push([time, parseFloat(item[i])]);
             if(formatTime(time) == '00:00:00') {
                accumulated = 0;
             }
-            accumulated += item[i];
+            accumulated += parseFloat(item[i]);
             sums.push([time, accumulated]);
             previousTime = time;
         });
@@ -220,6 +218,7 @@ function fit_series(_series, chart, data) {
             data: sums
         });
     });
+    return max_time;
 }
 
 function get_single_chart(chart, data, formatter) {
@@ -227,7 +226,16 @@ function get_single_chart(chart, data, formatter) {
     fit_yaxis(_yAxis, chart);
     fit_series(_series, chart, data);
     var stacking = chart.stack == "true" ? 'normal' : null;
-    return fit_chart(chart.title, _series, _yAxis, formatter, stacking);
+    var hightchart = fit_chart(chart.title, _series, _yAxis, formatter, stacking);
+    $.extend(hightchart.legend, {
+        floating: true,
+        x: 60,
+        y: 35,
+        align: 'left',
+        layout: 'vertical',
+        verticalAlign: 'top'
+    });
+    return hightchart;
 }
 
 function get_dod_wow_chart(chart, today, ystd, lastwk, formatter) {
@@ -241,15 +249,18 @@ function get_dod_wow_chart(chart, today, ystd, lastwk, formatter) {
         metric.color = "#555555";
         metric.series = "{0} {1}".format("Today", metric.series);
     });
-    fit_series(_series, tchart, today);
+    time_boundary = fit_series(_series, tchart, today);
 
+    // only show legend when dod/wow in one same graph
+    var legend_enabled = true;
     if(! isEmpty(ystd)) {
         var lchart = clone(chart);
         lchart.metrics.forEach(function(metric) {
             metric.color = "#7cb5ec";
             metric.series = "{0} {1}".format("Ystd ", metric.series);
         });
-        fit_series(_series, lchart, ystd);
+        fit_series(_series, lchart, ystd, time_boundary);
+        legend_enabled ^= true;
     }
 
     if(! isEmpty(lastwk)) {
@@ -258,15 +269,16 @@ function get_dod_wow_chart(chart, today, ystd, lastwk, formatter) {
             metric.color = "#f7a35c";
             metric.series = "{0} {1}".format("LastWk ", metric.series);
         });
-        fit_series(_series, lchart, lastwk);
+        fit_series(_series, lchart, lastwk, time_boundary);
+        legend_enabled ^= true;
     }
 
     var highchart = fit_chart(chart.title, _series, _yAxis, formatter);
-    highchart.legend.enabled=false;
+    highchart.legend.enabled=legend_enabled;
     return highchart;
 }
 
-function draw(chart, divid, today, ystd, lastwk) {
+function draw_graph(chart, divid, today, ystd, lastwk) {
 
     var dod = ! isEmpty(ystd);
     var wow = ! isEmpty(lastwk);
@@ -283,23 +295,57 @@ function draw(chart, divid, today, ystd, lastwk) {
     // new Highcharts.Chart(chart)
 }
 
-function draw_table(chart, data, divid) {
+function assembleLink(linkObj, requestArgs, item, value) {
+    var linkUrl = linkObj['url'];
+    if(isEmpty(linkUrl)) {
+        return value;
+    }
+    linkUrl = linkUrl.formatObject(requestArgs).formatObject(item);
+    return '<a href="{0}" target="_blank">{1}</a>'.format(linkUrl, value);
+}
 
-    var tableid = divid + "_table";
-    insert_table(divid, tableid);
+function draw_text(chart, data) {
+    var text = getDefaultIfNotContain(chart, 'prefix', '') + getDefaultIfNotContain(data, 'text', '') + getDefaultIfNotContain(chart, 'suffix', '');
+    var color = data['color'];
+    insert_text(chart.id, text, color);
+}
+
+function draw_iframe(chart, data) {
+    var url = data['url'] + getDefaultIfNotContain(chart, 'suffix', '');
+    insert_iframe(chart.id, url)
+}
+
+function draw_hyperlink(chart, data) {
+    var url = data['url'];
+    var description = chart.description;
+    insert_hyperlink(chart.id, url, description);
+}
+
+function draw_table(chart, requestArgs, data) {
+
+    var tableid = chart.id + "_table";
+    insert_table(chart.id, tableid);
 
     var fields = chart.fields.split(',');
     var columns = chart.columns.split(',');
     
+    var links = getDefaultIfNotContain(chart, 'links', {});
+
     var _dataset = [];
     data.forEach(function(item) {
         var arr = [];
         fields.forEach(function(f) {
+            if (isNumeric(f)) {
+                f = parseInt(f);
+            }
             var value = item[f];
             if(f == 'time') {
-                value = formatDate(value);
+                value = formatDate(value * 1000);
             } else if(isFloat(value)) {
                 value = value.toFixed(2);
+            }
+            if(f in links) {
+                value = assembleLink(links[f], requestArgs, item, value);
             }
             arr.push(value);
         });

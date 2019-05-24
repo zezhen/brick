@@ -1,0 +1,13 @@
+--- site-packages/cherrypy/process/plugins.py	2019-01-17 21:24:04.165150880 +0000
++++ /home/chunlin/plugins.py	2019-04-03 22:39:21.875270045 +0000
+@@ -206,8 +206,8 @@
+             self.bus.restart()
+         else:
+             # not daemonized (may be foreground or background)
+-            self.bus.log('SIGHUP caught but not daemonized. Exiting.')
+-            self.bus.exit()
++            self.bus.log('SIGHUP caught but not daemonized. Ignore it.')
++            pass
+ 
+ 
+ try:

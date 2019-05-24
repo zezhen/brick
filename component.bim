@@ -1,0 +1,24 @@
+# used by buildyblocks_yroot_create
+yroot: component
+yroot_x86_64_rhel_image: 6.5-20161111
+yroot_remove: false
+disable_rhel6: false
+dist_nomail: true
+
+provision_yinst_version: yinst7stable
+
+yroot_copy_files: 
+	/home/y/conf/clover/clover.license
+	/home/y/conf/coverity/license.dat
+	/home/y/var/tortuga_keys/id_dsa
+
+provision_x86_64_rhel_statefile: build.state
+provision_x86_64_rhel6_statefile: build.state
+
+dist_push_pkg_globs:
+        ./*.tgz
+
+dist_ignore_duplicate_package_errors: true
+dist_tag: curveball_budget_dashboard_${CURRENT_BRANCH}
+dist_group: curveball
+dist_branch: test

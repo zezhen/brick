@@ -51,6 +51,14 @@ body {
 /* Custom element CSS
 -------------------------------------------------- */
 
+.toggle-navigation {
+  margin: 0; 
+  padding:0; 
+  color: #fff; 
+  font-size: 0.8em;
+  float: left;
+}
+
 .panel-top-fixed {
   position: fixed;
   top: 0px;
@@ -62,14 +70,10 @@ body {
 }
 
 .search-panel {
-  position: fixed;
-  top: 0px;
-  right: 0px;
-  z-index: 2000;
-  width: 480px;
+  width: 140px;
   height: 52px;
-  padding: 10px 0;
-  margin: 0 70px;
+  padding: 10px;
+  margin-right: 20px;
   background-image: -webkit-linear-gradient(top, #3c3c3c 0, #222 100%);
   background-image: linear-gradient(to bottom, #3c3c3c 0, #222 100%);
   text-align: right;
@@ -149,6 +153,10 @@ body {
 
 .input-field > .btn-group {
   width: 130px;
+}
+
+.group-content > .input-field > .btn-group {
+  width: auto;
 }
 
 .width100 > .btn-group {

@@ -1,16 +1,28 @@
-
 import cherrypy
 import os, tempfile, sys, socket, re
-import ConfigParser, importlib
-from StringIO import StringIO
+import configparser, importlib
+from io import StringIO
 
 sys.path.append("./modules")
-import util, bconfig
+import util, bconfig, brick
 
-serverHostname = socket.gethostname()
-servicePort = 9999
-cherrypy.config.update({'server.socket_host':serverHostname, 'server.socket_port': servicePort,})
-cherrypy.config.update({'response.timeout': 10*60})
+server_config = {
+    'server.socket_host': '0.0.0.0',
+    'server.socket_port': 4443,
+    'server.ssl_module': 'builtin',
+    'server.ssl_certificate':'/home/y/conf/sslcerts/server.crt',
+    'server.ssl_private_key':'/home/y/conf/sslcerts/server.key',
+    'server.ssl_certificate_chain':'/home/y/conf/sslcerts/server.intermediate.crt',
+    'response.timeout': 10*60
+}
+
+# stag_server_config = {
+#     'server.socket_host': '0.0.0.0',
+#     'server.socket_port': 4443,
+#     'response.timeout': 10*60
+# }
+
+cherrypy.config.update(server_config)
 
 def jsonify_tool_callback(*args, **kwargs):
     response = cherrypy.response
@@ -34,11 +46,11 @@ class App(object):
     def index(self, **args):
         access, userid = self.permission_check()
         if not access:
-            return file('./templates/help.html')
+            return open('./templates/help.html')
         else:
-            content = "".join(file('./templates/index.html').readlines())
+            content = "".join(open('./templates/index.html').readlines())
             ret = self.prepare(args.get('page'), content)
-            return StringIO(unicode(ret))
+            return ret.encode('utf-8')
 
     @cherrypy.expose
     @cherrypy.tools.jsonify()
@@ -46,25 +58,17 @@ class App(object):
         cherrypy.response.headers['Content-Type'] = 'application/json'
         access, userid = self.permission_check()
         if not access:
-            return {'error': "".join(file('./templates/help.html').readlines())}
+            return {'error': "".join(open('./templates/help.html').readlines())}
         else:
-            return self.process(args)
+            return self.process(args).encode('utf-8')
     
     def process(self, args):
         action = args.get('action')
         
-        try:
-            executor = importlib.import_module(action)
-        except Exception as e:
-            print '[WARN] no %s module found, use default brick' % (action)
-            print e
-            executor = importlib.import_module('brick')
-
-        print executor
-        result = executor.execute(self.config, action, args)
+        result = brick.execute(self.config, action, args)
         
         ret = util.json_to_str(result)
-        print ret[:1000]
+        print(ret[:1000])
         return ret
 
     def prepare(self, page, content):
@@ -98,10 +102,15 @@ if __name__ == '__main__':
         '/help.html': {
             'tools.staticfile.on': True,
             'tools.staticfile.filename': os.getcwd() + '/templates/help.html'
+        },
+        '/status.html': {
+            'tools.staticfile.on': True,
+            'tools.staticfile.filename': '/home/y/share/htdocs/status.html'
         }
     }
     
+
     webapp = App()
-    webapp.config = ConfigParser.ConfigParser()
+    webapp.config = configparser.ConfigParser()
     webapp.config.read('./app.cnf')
     cherrypy.quickstart(webapp, '/', conf)

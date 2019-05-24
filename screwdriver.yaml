@@ -1,0 +1,60 @@
+platform: cpp
+
+shared:
+  notifications:
+    email: curveball-budget-dev@oath.com
+  build_containers: [rhel6]
+  publish_containers: [rhel6]
+  plugins:
+    build_timeout: 420 #7 hours
+    coverage: #disable the coverage result plugin and test result plugin by default, as most jobs don't need them
+      enabled: false
+    test_results:
+      enabled: false
+  settings:
+    env.STEP_SCRIPT: screwdriver/build_steps.sh
+    env.BUILD_STEP_FUNCTION: do_nothing
+    env.POSTBUILD_STEP_FUNCTION: do_nothing
+  steps:
+    init: 
+      branch: "quarantine"
+    clean:
+      description: disable this default step and put everything in the prebuild/build/postbuild steps
+      command: |
+        echo "do nothing in this step"
+    prebuild:
+      description: perform some prerequisite validation tasks before the formal build step
+      command: |
+        /home/y/bin/cbsd_run_step.sh ${STEP_SCRIPT} ${PREBUILD_STEP_FUNCTION}
+    build:
+      description: perform all the regular build tasks
+      command: |
+        /home/y/bin/cbsd_run_step.sh ${STEP_SCRIPT} ${BUILD_STEP_FUNCTION}
+    postbuild:
+      always_run: true
+      description: perform some must-done (clean up) tasks regardless of the build pass/fail status
+      command: |
+        /home/y/bin/cbsd_run_step.sh ${STEP_SCRIPT} ${POSTBUILD_STEP_FUNCTION}
+    test:
+      description: disable this default step and put everything in the prebuild/build/postbuild steps
+      command: |
+        echo "do nothing in this step"
+    package:
+      description: disable this default step and put everything in the prebuild/build/postbuild steps
+      command: |
+        echo "do nothing in this step"
+    publish:
+      description: disable this default step and put everything in the prebuild/build/postbuild steps
+      command: |
+        echo "do nothing in this step"
+
+jobs:
+  pull-request:
+    settings:
+      env.PREBUILD_STEP_FUNCTION: do_nothing
+      env.BUILD_STEP_FUNCTION: pr_build
+  component:
+    settings:
+      env.PREBUILD_STEP_FUNCTION: do_nothing
+      env.BUILD_STEP_FUNCTION: component_build
+    triggers: [sd@241613:arya-assemble]

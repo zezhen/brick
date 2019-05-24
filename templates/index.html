@@ -17,41 +17,52 @@
 <body>
   <div id="wrap">
     <!-- navbar-fixed-top -->
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="navbar-header" id="header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation" style="min-width: 520px">
+      <div class="navbar-header" id="header" style="min-width: 260px; float: left;">
         <div class="navbar-brand">
           MoneyWatcher <span style="font-size: 0.65em;">Gemini Budget</span>
         </div>
       </div>
-      <div class="collapse navbar-collapse">
-        <ul id='nav_bar' class="nav navbar-nav" id="nav_left">
+
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" style="float: left;">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="toggle-navigation">Menu</span>
+        <div class="iconbars" style="margin-left: 10px; float: left;">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </div>
+      </button>
+      <div class="collapse navbar-collapse" style="float: left;">
+        <ul id='nav_bar_left' class="nav navbar-nav">
           <!-- use js to insert nav tabs into here-->
+        </ul>
+      </div>
+
+      <div class="" style="float: right; margin-right: 21px">
+        <ul id='nav_bar_right' class="nav navbar-nav">
+          <li id="nav_timezone" class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                EST<b class="caret"></b>
+              </a>
+              <ul id="navddm_timezone" class="dropdown-menu">
+                <li class="timezone-option">
+                  <a id="nav_timezone" href="#" data-toggle="tab">EST</a>
+                </li>
+                <li class="timezone-option">
+                  <a id="nav_timezone" href="#" data-toggle="tab">UTC</a>
+                </li>
+                <li class="timezone-option">
+                  <a id="nav_timezone" href="#" data-toggle="tab">LOCAL</a>
+                </li>
+              </ul>
+          </li>
         </ul>
       </div>
     </div>
 
     <!-- Begin page content -->
-    <div class="container">
-      <div id="timezone" class="btn-group timezone search-panel" role="group" data-toggle="buttons">
-        <label class="btn btn-primary btn-sm active">
-          <input type="radio" name="options" autocomplete="off">EST</input>
-        </label>
-        <label class="btn btn-primary btn-sm">
-          <input type="radio" name="options" autocomplete="off">UTC</input>
-        </label>
-        <label class="btn btn-primary btn-sm">
-          <input type="radio" name="options" autocomplete="off">LOCAL</input>
-        </label>
-      </div>
-    </div>
-
-    <div id="nav_content" class="tab-content">
+    <div id="nav_content" class="tab-content" style="margin-top:73px">
     <!-- use js to insert nav content into here -->      
     </div>
   </div>
@@ -87,21 +98,27 @@
     var config = __CONFIG__;
     load_config(config);
 
-    var page = getParameterByName('page');
+    var page = getUrlParameterByName('page');
     if(isEmpty(page)) {
         page = 'gemini';
     }
 
-    var auto = getParameterByName('auto');
+    var auto = getUrlParameterByName('auto');
     if(auto != "0") {
-      setTimeout(function() {
-        $('#button_' + page).trigger('click');
-      }, 1000);
+        $('#button_' + page).trigger('click', 'true');
     }
 
     $('#nav_' + page).parent().addClass('active');
     $('#pan_' + page).removeClass('fade').addClass('active');
 
+    // update label text of the timezone dropdown immediately after making selection
+    $("#navddm_timezone li a").click(function(){
+      var timezone = $(this).text();
+      if (!isEmpty(timezone)) {
+          $("#nav_timezone > a").get(0).firstChild.nodeValue = timezone;
+          updateDateTimePicker(timezone);
+      }
+    });
   </script>
 </body>
 </html>

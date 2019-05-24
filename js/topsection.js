@@ -210,9 +210,50 @@ var topsections = {
     5420624:'SidekickClassicITNews'
 };
 
-function get_param(navid) {
-    if(navid != 'topsection') return null;
-    return {'section': Object.keys(topsections).join(',')};
+var section_whitelist = {
+    4421334:'newsministrm',
+    4402687:'newsmainstrm',
+    4492584:'sportsministrm',
+    4492794:'financeministrm',
+    4250754:'hpstrm',
+    5354120:'tumblrmobilestrm',
+    5496342:'tumblrBlogInstream',
+    4923847:'postcardinboxstrm',
+    5421583:'mailmsgliststrm-Norrin',
+    4871337:'mailandroidappstrm',
+    5317864:'mailiosappstrm',
+    5324856:'mailnativemobile',
+    5192354:'tumblrstrm',
+    5420470:'Tango-Carousel',
+    5420469:'Tango-Chat',
+    4494903:'hmrnstrm',
+    5413706:'fantasyiosappstrm',
+    5413723:'homerununifiedappandroidstrm',
+    5413718:'hmrnandroidstrm',
+    5413705:'fantasyandroidappstrm',
+    5447576:'Tango-profile-ios',
+    5447578:'Tango-feed-ios',
+    5447579:'Tango-chat-ios',
+    5447580:'Tango-discover-ios',
+    5447581:'Tango-profile-android',
+    5447582:'Tango-feed-android',
+    5447583:'Tango-chat-android',
+    5447584:'Tango-discover-android',
+    5459020:'Cheetah-Applock-BigNative',
+    5463970:'Cheetah-ChargingScreen-BigNative',
+    5463955:'SDK-Cheetah-Applock-BigNative',
+    5463954:'SDK-Cheetah-ChargingScreen-BigNative'
+};
+
+
+
+function get_param(tabid) {
+    if(tabid == 'topsection') {
+        return {'section': Object.keys(topsections).join(',')};
+    } else if (tabid == 'section_whitelist') {
+        return {'section': Object.keys(section_whitelist).join(',')};
+    }
+    return null;
 }
 
 function ranking_keys(maps) {
@@ -233,7 +274,9 @@ function ranking_keys(maps) {
 }
 
 function convert_title(section_id) {
-    return "{0}({1})".format(topsections[section_id], section_id)
+    var sectionName = (section_id in topsections) ? 
+            topsections[section_id] : section_whitelist[section_id];
+    return "{0}({1})".format(sectionName, section_id)
 }
 
 function show(chart, result) {

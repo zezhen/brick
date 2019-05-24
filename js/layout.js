@@ -1,32 +1,64 @@
+function getEndTime(timezone) {
+    if (isEmpty(timezone)) {
+        return moment().tz("America/New_York").format('YYYY-MM-DD HH:mm');
+    }
+    if (timezone == "LOCAL") {
+        timezone = jstz.determine().name();
+    }
+    return moment().tz(timezone).format('YYYY-MM-DD HH:mm');
+}
 
-var datetimepicker_config = {
-    format: 'yyyy-mm-ddThh:00',
-    todayBtn: 1,
-    autoclose: 1,
-    minView: 'day',
-    endDate: moment.utc().toDate(),
-    language: 'en',
-    datepicker: true,
-    timepicker: false,
-    hourStep: 1,
-    // minuteStep: 15,
-    inputMask: true
-};
+function getDateMinutePickerConfig(timezone) {
+    var dateminutepicker_config = {
+        format: 'yyyy-mm-ddThh:ii',
+        todayBtn: 1,
+        autoclose: 1,
+        minView: 'hour',
+        endDate: getEndTime(timezone),
+        language: 'en',
+        datepicker: true,
+        timepicker: false,
+        hourStep: 1,
+        minuteStep: 1,
+        inputMask: true,
+    };
+    return dateminutepicker_config;
+}
 
-var datepicker_config = {
-    format: 'yyyy-mm-ddT00:00',
-    todayBtn: 1,
-    autoclose: 1,
-    endDate: moment.utc().toDate(),
-    language: 'en',
-    datepicker: true,
-    dayStep: 1,
-    inputMask: true
-};
+function getDateTimePickerConfig(timezone) {
+    var datetimepicker_config = {
+        format: 'yyyy-mm-ddThh:00',
+        todayBtn: 1,
+        autoclose: 1,
+        minView: 'day',
+        endDate: getEndTime(timezone),
+        language: 'en',
+        datepicker: true,
+        timepicker: false,
+        hourStep: 1,
+        inputMask: true,
+    };
+    return datetimepicker_config;
+}
+
+function getDatePickerConfig(timezone) {
+    var datepicker_config = {
+        format: 'yyyy-mm-ddT00:00',
+        todayBtn: 1,
+        autoclose: 1,
+        endDate: getEndTime(timezone),
+        language: 'en',
+        datepicker: true,
+        dayStep: 1,
+        inputMask: true,
+    };
+    return datepicker_config;
+}
 
 function get_value(component) {
     var id = "{0}_{1}".format(component['id'], component['navid']) ;
     switch(component['type']) {
+        case 'dateminutepicker':
         case 'datetimepicker':
         case 'datepicker':
         case 'field':
@@ -39,7 +71,10 @@ function get_value(component) {
 }
 
 function insert(divid, component) {
+    
     switch(component['type']) {
+        case 'dateminutepicker':
+            insert_dateminutepicker(divid, component); break;
         case 'datetimepicker':
             insert_datetimepicker(divid, component); break;
         case 'datepicker':
@@ -53,19 +88,21 @@ function insert(divid, component) {
             if('navdropdown' in component) {
                 divid = 'navddm_' + component.navdropdown;
             } else {
-                divid = prefix + 'bar';
+                divid = prefix + 'bar_left';
             }
-            insert_navtab(divid, component); 
+            insert_navtab(divid, component);
             insert_navcontent(prefix + 'content', component);
             break;
         case 'navdropdown':
-            insert_navdropdown(divid + 'bar', component); break;
+            insert_navdropdown(divid + 'bar_left', component); break;
         case 'html':
             insert_html(divid, component); break;
         case 'button_group':
             insert_button_group(divid, component); break;
         case 'rtab':
             insert_rtab(divid, component); break;
+        case 'group':
+            insert_group(divid, component); break;
         default:
             // console.log('unknown type ' + component['type']);
             break;
@@ -94,6 +131,23 @@ function insert_html(insert_id, html) {
     $('#' + insert_id).load(html.file);
 }
 
+function insert_text(insert_id, text, color) {
+    var label = '<label class="summary" style="color:{0}">{1}</label></br>'.format(color, text);
+    $('#' + insert_id).append(label);
+}
+
+function insert_iframe(insert_id, url) {
+    var iframe = `<div class="iframe-container">
+            <iframe src="{0}" frameBorder=0 scrolling=yes ALLOWTRANSPARENCY="true" style="position: absolute; width: 98%; height: 99%; border: none"></iframe>
+        </div>`.format(url);
+    $('#' + insert_id).append(iframe);
+}
+
+function insert_hyperlink(insert_id, url, description) {
+    var link = ' <div><a href="{0}" target="_blank"><label class="summary">{1}</label></a></div>'.format(url, description);
+    $('#' + insert_id).append(link);
+}
+
 function insert_navtab(insert_id, navdropdown) {
     var div = '<li class=""><a id="nav_{0}" href="#pan_{0}" data-toggle="tab">{1}</a>'.format(navdropdown.id, navdropdown.name);
     $('#' + insert_id).append(div);
@@ -120,18 +174,43 @@ function insert_navcontent(insert_id, navcontent) {
     $('#' + insert_id).append(div);
 }
 
+function insert_group(insert_id, group) {
+    var div = `
+        <div class="group" id="{0}">
+            <label class="input-field group-label">{1}</label>
+            <div class = "group-content" id="{2}"></div>
+        </div>
+    `.format(group.id, group.name, group.id + '-content');
+    $('#' + insert_id).append(div);
+
+    group.data.forEach(function(module) {
+        module['navid'] = group.navid;
+        insert(group.id + '-content', module);
+    });
+}
+
 function insert_datepicker(div, dt_picker) {
+    var timezone = get_timezone();
     var dtid = get_id_w_navid(dt_picker);
     var picker_layout = '<div class="input-field"><label for="{0}" class="control-label">{1}</label><input type="text" id="{0}" placeholder="{2}" /></div>'.format(dtid, dt_picker.name, getDefaultIfEmpty(dt_picker.placeholder,""))
     $('#' + div).append(picker_layout);
-    $('#' + dtid).datepicker(datepicker_config);
+    $('#' + dtid).datepicker(getDatePickerConfig(timezone));
 }
 
 function insert_datetimepicker(div, dt_picker) {
+    var timezone = get_timezone();
     var dtid = get_id_w_navid(dt_picker);
     var picker_layout = '<div class="input-field"><label for="{0}" class="control-label">{1}</label><input type="text" id="{0}" placeholder="{2}" /></div>'.format(dtid, dt_picker.name, getDefaultIfEmpty(dt_picker.placeholder,""))
     $('#' + div).append(picker_layout);
-    $('#' + dtid).datetimepicker(datetimepicker_config);
+    $('#' + dtid).datetimepicker(getDateTimePickerConfig(timezone));
+}
+
+function insert_dateminutepicker(div, dt_picker) {
+    var timezone = get_timezone();
+    var dtid = get_id_w_navid(dt_picker);
+    var picker_layout = '<div class="input-field"><label for="{0}" class="control-label">{1}</label><input type="text" id="{0}" placeholder="{2}" /></div>'.format(dtid, dt_picker.name, getDefaultIfEmpty(dt_picker.placeholder,""))
+    $('#' + div).append(picker_layout);
+    $('#' + dtid).datetimepicker(getDateMinutePickerConfig(timezone));
 }
 
 function insert_field(div, field) {
@@ -156,17 +235,19 @@ function insert_dropdown(div, dropdown) {
     });
 
     var dpid = get_id_w_navid(dropdown);
-    var dropdown_layout = `<div class="input-field"> 
+    var hidden = (dropdown.hidden == 'true') ? "hidden" : "";
+    var dropdown_layout = `<div class="input-field {4}" id="dropdown_offset">
       <label for="product" class="control-label">{1}</label>
       <div class="btn-group" id="{0}">
-       <button type="button" class="btn btn-default">{2}</button>
+       <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="border-top-right-radius:0;
+border-bottom-right-radius:0;">{2}</button>
        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
         <span class="caret"></span> <span class="sr-only">Toggle Dropdown</span> </button> 
        <ul class="dropdown-menu" role="menu">
            {3}
        </ul>
       </div> 
-     </div>`.format(dpid, dropdown.name, first, list.join(''));
+     </div>`.format(dpid, dropdown.name, first, list.join(''), hidden);
 
     $('#' + div).append(dropdown_layout);
 
@@ -179,8 +260,8 @@ function insert_dropdown(div, dropdown) {
 function insert_button(div, id, callback) {
     var button = '<button class="btn btn-primary" data-loading-text="Querying" id="{0}">Submit</button>'.format(id);
     $('#' + div).append(button);
-    $('#' + id).click(function () {
-        callback();
+    $('#' + id).click(function (event, auto) {
+        callback(event, auto);
     });
 }
 

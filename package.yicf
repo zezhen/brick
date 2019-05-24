@@ -1,0 +1,80 @@
+PRODUCT_NAME="curveball_budget_dashboard"
+CUSTODIAN ="curveball-budget-dev@oath.com"
+VERSION=`/home/y/bin/git_auto_version -p master- | awk -F '.' '{print $1"."$2"."$3}'`
+SHORT_DESC="curveball bduget data dashboard"
+LONG_DESC=`{ set -e; cat README.md; }`
+
+SRCDIRS = ./
+#PACKAGE_OS_SPECIFIC = no
+
+YINST requires os rhel 6.3 6.9999
+YINST requires root /home/y
+YINST requires pkg python36
+YINST requires pkg hive
+YINST requires pkg ytez
+YINST requires pkg ytez_conf
+YINST requires pkg hadoopcoretree
+YINST requires pkg ygrid_launcher
+YINST requires pkg ygrid_cacert
+YINST requires pkg mysql_client57
+YINST requires pkg curveball_ffl_tools
+YINST bug-product Serving Exchange
+YINST bug-component BUDGET
+
+OWNER = yahoo
+GROUP = users
+PERM = 0664
+
+d 0755 yahoo users var/curveball_budget_dashboard/
+f 0755 yahoo users var/curveball_budget_dashboard/ brick_app.py
+f 0755 yahoo users var/curveball_budget_dashboard/ start.sh
+f 0755 yahoo users var/curveball_budget_dashboard/ stop.sh
+
+d 0755 yahoo users var/curveball_budget_dashboard/css
+g 0755 yahoo users var/curveball_budget_dashboard/css/ css/*.css
+d 0755 yahoo users var/curveball_budget_dashboard/css/bootstrap
+g 0755 yahoo users var/curveball_budget_dashboard/css/bootstrap/ css/bootstrap/*
+d 0755 yahoo users var/curveball_budget_dashboard/css/fonts
+g 0755 yahoo users var/curveball_budget_dashboard/css/fonts/ css/fonts/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/images
+g 0755 yahoo users var/curveball_budget_dashboard/images/ images/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/js
+g 0755 yahoo users var/curveball_budget_dashboard/js/ js/*.js
+d 0755 yahoo users var/curveball_budget_dashboard/js/bootstrap
+g 0755 yahoo users var/curveball_budget_dashboard/js/bootstrap/ js/bootstrap/*
+d 0755 yahoo users var/curveball_budget_dashboard/js/jquery
+g 0755 yahoo users var/curveball_budget_dashboard/js/jquery/ js/jquery/*
+d 0755 yahoo users var/curveball_budget_dashboard/js/util
+g 0755 yahoo users var/curveball_budget_dashboard/js/util/ js/util/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/lib
+g 0755 yahoo users var/curveball_budget_dashboard/lib/ lib/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/logs
+
+d 0755 yahoo users var/curveball_budget_dashboard/modules
+g 0755 yahoo users var/curveball_budget_dashboard/modules/ modules/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/patch
+g 0755 yahoo users var/curveball_budget_dashboard/patch/ patch/*
+
+g 0755 yahoo users bin/ bin/*
+
+d 0755 yahoo users var/curveball_budget_dashboard/templates
+g 0755 yahoo users var/curveball_budget_dashboard/templates/ templates/*
+
+c 0755 yahoo users var/curveball_budget_dashboard/app.cnf conf/app.cnf overwrite expand
+
+
+YINST set db_user                 pmdb_ro
+YINST set db_host                 pmdb2.bud.cb.bf1.yahoo.com
+YINST set db_schema               pmdb
+YINST set hbase                   blue_prod
+YINST post-activate touch var/curveball_budget_dashboard/logs/app.log
+YINST post-activate chgrp users var/curveball_budget_dashboard/logs/app.log
+YINST post-activate chmod 0664 var/curveball_budget_dashboard/logs/app.log
+
+YINST start 1 /home/y/var/curveball_budget_dashboard/start.sh
+YINST stop 1 /home/y/var/curveball_budget_dashboard/stop.sh

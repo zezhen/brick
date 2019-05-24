@@ -24,6 +24,17 @@ if (!String.prototype.format) {
   };
 }
 
+if (!String.prototype.formatObject) {
+    String.prototype.formatObject = function() {
+        var formatted = this;
+        var obj = arguments[0];
+        for (var key in obj) {
+            formatted = formatted.replace("{" + key + "}", obj[key]);
+        }
+        return formatted;
+    };
+}
+
 // Speed up calls to hasOwnProperty
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -63,11 +74,15 @@ function getDefaultIfOutOfArray(array, i, _default) {
     return array == null || array.length <= i ? _default : array[i];
 }
 
-function getDefaultIfNotContain(key, map, _default) {
+function getDefaultIfNotContain(map, key, _default) {
     return (key != null && key in map) ? map[key] : _default;
 }
 
-function getParameterByName(name) {
+function getDefaultIfKeyNotExist(object, key, _default) {
+    return (key != null && object[key] != undefined) ? object[key] : _default;
+}
+
+function getUrlParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
@@ -123,7 +138,7 @@ function divide(num1, num2) {
 }
 
 function load_header(force) {
-    var header = getParameterByName('header');
+    var header = getUrlParameterByName('header');
     if(force || header == 'true') {
         $('#header').load('index?page=header');
     }
@@ -145,10 +160,12 @@ function getDayStart() {
 function fillCustomTime(time, customTime) {
     if(isEmpty(time)) {
         return customTime;
+    } else if (Number(time)){
+        return parseInt(time);
     } else {
         return Math.trunc(moment.tz(time, 'UTC').toDate().getTime() / 1000);
     }
-};
+}
 
 function clone(obj) {
     var copy;
@@ -201,9 +218,15 @@ function load_script(script_file, callback) {
     }
 }
 
+function get_value_by_fields(data, multiple_layer_fields_separated_by_dot) {
+    return multiple_layer_fields_separated_by_dot.split('.').reduce((o, i) => o[i], data);
+}
+
 function get_data(metrics, raw_data) {
     var data = [];
-
+    raw_data.sort(function(a, b) {
+        return a.time - b.time;
+    });
     raw_data.forEach(function(item) {
         ret = []
         ret.push(item.time);
@@ -278,6 +301,10 @@ function calculate_formula(item, formula) {
       },
 
       function(a, b) {
+        var bb = parse(b);
+        if (bb < 1e-5 && bb > -1e-5) {
+           return 0.0;
+        }
         return parse(a) / parse(b)
       },
 
@@ -332,4 +359,47 @@ function isInt(n){
 
 function isFloat(n){
     return Number(n) === n && n % 1 !== 0;
+}
+
+function updateDateTimePicker(timezone) {
+    var dateTimeConfig = getDateTimePickerConfig(timezone);
+    config.navigations.forEach(function(navigation){
+        if(!('layouts' in navigation)) {
+            // nav dropdown
+            return;
+        }
+        var navid = navigation.id;
+        $("#start_" + navid).datetimepicker('remove');
+        $("#end_" + navid).datetimepicker('remove');
+        $("#start_" + navid).datetimepicker(dateTimeConfig);
+        $("#end_" + navid).datetimepicker(dateTimeConfig);
+    }); 
+}
+
+function isNumeric(num){
+    return !isNaN(num)
+}
+
+// convert epoch time to iso format yy-mm-ddThh:mm
+function epicToISODate(value) {
+    var date = new Date(value * 1000).toISOString().substring(0, 16);
+    return date;
+}
+
+function updateInputPlaceholder(value, component) {
+    var id = get_id_w_navid(component);
+    switch(component['type']) {
+        case 'dropdown':
+            $('#' + id + ' > button:first').html(value);
+            break;
+        case 'dateminutepicker':
+        case 'datetimepicker':
+        case 'datepicker':
+            value = epicToISODate(value);
+        case 'field':
+            $('#' + id).attr('value', value);
+            break;
+        default:
+            break;
+    }
 }
