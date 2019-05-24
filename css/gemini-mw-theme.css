@@ -1,0 +1,356 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+  /* The html and body elements cannot have any padding or margin. */
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+  min-height: 100%;
+  height: auto;
+  /* Negative indent footer by its height */
+  margin: 0 auto -60px;
+  /* Pad bottom by footer height */
+  padding: 0 0 60px;
+}
+
+/* Set the fixed height of the footer here */
+#footer {
+  height: 60px;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+#topper {
+  background-color: #222;
+}
+
+#topper > .container {
+  padding: 60px 15px 10px;
+}
+
+#wrap > .container {
+  padding: 60px 15px 0;
+}
+
+#footer > .container {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+#footer > .container .text-muted {
+  margin: 20px 0;
+}
+
+/* Custom element CSS
+-------------------------------------------------- */
+
+.panel-top-fixed {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  margin-top: 50px;
+  border-radius: 0px;
+  z-index: 999;
+}
+
+.search-panel {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  z-index: 2000;
+  width: 480px;
+  height: 52px;
+  padding: 10px 0;
+  margin: 0 70px;
+  background-image: -webkit-linear-gradient(top, #3c3c3c 0, #222 100%);
+  background-image: linear-gradient(to bottom, #3c3c3c 0, #222 100%);
+  text-align: right;
+}
+
+.search-panel > label {
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #eeeeee;
+  font-weight: normal;
+}
+
+.search-panel > input {
+  padding-left: 5px;
+  padding-right: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 130px;
+}
+
+.search-panel > button {
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 90px;
+}
+
+.chart-space {
+  margin: 0 auto;
+  width: 1140px;
+  min-width: 300px;
+  height: 400px;
+}
+
+.chart-space-md {
+  margin: 0 auto;
+  min-width: 300px;
+  height: 250px;
+}
+
+.top-buffer-portal {
+  margin-top: 130px;
+}
+
+.input-field {
+  float: left;
+  height: 36px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.input-field-clear {
+  float: none;
+  height: 36px;
+}
+
+.input-field > label {
+  display: inline-block;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-weight: normal;
+}
+
+.input-field > input {
+  display: inline-block;
+  margin-top: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 130px;
+}
+
+.input-field > button {
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 90px;
+}
+
+.input-field > .btn-group {
+  width: 130px;
+}
+
+.width100 > .btn-group {
+  width: 100px;
+}
+
+.width300 > .btn-group {
+  width: 300px;
+}
+
+.alignleft {
+  margin-left: 0px;
+}
+
+.alignleft30 {
+  margin-left: 30px;
+}
+
+.output-graph {
+/*  width: 80%;
+  margin: auto;
+  padding: 3px;*/
+  margin-left: 0px;
+}
+
+.output-item {
+  border: 1px solid #73AD21;
+}
+
+.extend-label {
+  width: 130px;
+}
+
+.tbl-center-align {
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.tbl-number-align {
+  text-align: right;
+  vertical-align: middle !important;
+}
+
+.tbl-string-align {
+  text-align: left;
+  vertical-align: middle !important;
+}
+
+.tbl-title-subtitle {
+  font-size: 10px;
+}
+
+.label-overspend-type-i {
+  background-color: #d9534f;
+}
+
+.label-overspend-type-ii {
+  background-color: #f0ad4e;
+}
+
+.label-overspend-type-iii-1 {
+  background-color: #5cb85c;
+}
+
+.label-overspend-type-iii-2 {
+  background-color: #428bca;
+}
+
+.label-overspend-type-iv {
+  background-color: #400090;
+}
+
+.label-types {
+  display: inline-block;
+  padding-top: 2.5px;
+  padding-bottom: 2.5px;
+  margin-left: 2px;
+  margin-right: 2px;
+  width: 22px;
+}
+
+.label-types-unknown {
+  background-color: #fff;
+  color: #d9534f;
+}
+
+.label-cms-event {
+  background-color: #999;
+}
+
+.label-cms-smart {
+  background-color: #428bca;
+}
+
+.label-cms-diff {
+  background-color: #5cb85c;
+}
+
+.label-cms-repeat {
+  background-color: #d9534f;
+}
+
+.label-cms-daystart {
+  background-color: #f0ad4e;
+}
+
+.label-cms-bootstrap {
+  background-color: #5bc0de;
+}
+
+.label-cms-smartbootstrap {
+  background-color: #400090;
+}
+
+.label-event-click {
+  background-color: #999;
+}
+
+.label-event-impression {
+  background-color: #428bca;
+}
+
+.label-pricing-cpc {
+  background-color: #999;
+}
+
+.label-pricing-cpm {
+  background-color: #428bca;
+}
+
+.label-pricing-cpi {
+  background-color: #5cb85c;
+}
+
+.label-pricing-cpa {
+  background-color: #d9534f;
+}
+
+.label-pricing-cpe {
+  background-color: #f0ad4e;
+}
+
+.label-object-campaign {
+  background-color: #999;
+}
+
+.label-object-advertiser {
+  background-color: #428bca;
+}
+
+.label-spend-native {
+  background-color: #999;
+}
+
+.label-spend-search {
+  background-color: #428bca;
+}
+
+.label-pacing-even {
+  background-color: #999;
+}
+
+.label-pacing-asap {
+  background-color: #428bca;
+}
+
+.label-pacing-default {
+  background-color: #999;
+}
+
+.tip {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  padding: 10px;
+  width: 300px;
+  color: #fff;
+  border-radius: 10px;
+}
+
+.col-meter {
+  text-align: center;
+}
+
+.lbl-meter-title {
+  font-weight: normal;
+  font-size: 14px;
+  color: #999;
+}
+
+.lbl-meter-value {
+  font-weight: normal;
+  font-size: 24px;
+}
+
+.lbl-meter-value-sub,
+.lbl-meter-value-sup {
+  font-weight: normal;
+  font-size: 14px;
+  color: #428bca;
+}
+
+.errorClass { border:  1px solid red; }
